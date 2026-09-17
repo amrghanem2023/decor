@@ -186,18 +186,45 @@ tbody tr:hover{background:#FBF9F5}
   .main{padding:16px}
   .r2,.r3,.r4{grid-template-columns:1fr}
 }
+
+/* ---------- تسجيل الدخول ---------- */
+.login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--paper);padding:20px}
+.login-box{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:28px 26px;width:min(360px,100%);box-shadow:0 10px 30px rgba(31,27,22,.07)}
+.login-box .mk{width:52px;height:52px;border-radius:12px;background:var(--brass-soft);display:grid;place-items:center;font-size:24px;margin:0 auto 14px}
+.login-box h2{margin:0 0 4px;text-align:center;font-size:19px}
+.login-box p{margin:0 0 20px;text-align:center;color:var(--ink-2);font-size:13px}
+.login-box label{margin-top:12px}
+.login-box .err{color:var(--clay);font-size:12.5px;margin-top:10px;text-align:center;display:none}
+.login-box .err.show{display:block}
+.login-box .btn{width:100%;margin-top:18px;padding:10px}
 </style>
 </head>
 <body>
 
-<div class="app">
+<div class="login-wrap" id="loginWrap">
+  <div class="login-box">
+    <div class="mk">🔒</div>
+    <h2>تسجيل الدخول</h2>
+    <p>نظام إدارة الديكورات — مؤسسة فن البساطة</p>
+    <label>اسم المستخدم</label>
+    <input id="lg_user" autocomplete="username" placeholder="admin">
+    <label>كلمة المرور</label>
+    <input id="lg_pass" type="password" autocomplete="current-password" placeholder="••••••••">
+    <div class="err" id="lg_err">اسم المستخدم أو كلمة المرور غير صحيحة</div>
+    <button class="btn gold" id="lg_btn">دخول</button>
+  </div>
+</div>
+
+<div class="app" id="appRoot" style="display:none">
   <aside class="side">
     <div class="brand">
       <div class="mark" id="navLogo"></div>
       <div class="txt"><b id="navName">فن البساطة</b><span>إدارة الديكورات</span></div>
     </div>
     <nav class="nav" id="nav"></nav>
-    <div class="foot">الإصدار 1.0 — بيانات محفوظة على الجهاز</div>
+    <div class="foot">الإصدار 1.0 — بيانات محفوظة على الجهاز
+      <div style="margin-top:6px"><button class="btn ghost sm" id="logoutBtn" style="width:100%">تسجيل خروج</button></div>
+    </div>
   </aside>
   <main class="main" id="view"></main>
 </div>
@@ -882,8 +909,35 @@ function drawQR(i){
 (function(){const s=document.createElement('script');
  s.src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';s.async=true;document.head.appendChild(s);})();
 
+/* ================= تسجيل الدخول ================= */
+const AUTH_KEY='decor_shop_auth_v1';
+const AUTH_USER='admin', AUTH_PASS='admin123';
+function showApp(){
+ $('#loginWrap').style.display='none';
+ $('#appRoot').style.display='';
+ openDB().then(()=>{save();render()});
+}
+function showLogin(){
+ $('#loginWrap').style.display='flex';
+ $('#appRoot').style.display='none';
+}
+function tryLogin(){
+ const u=$('#lg_user').value.trim(), p=$('#lg_pass').value;
+ if(u===AUTH_USER && p===AUTH_PASS){
+  sessionStorage.setItem(AUTH_KEY,'1');
+  $('#lg_err').classList.remove('show');
+  showApp();
+ } else {
+  $('#lg_err').classList.add('show');
+ }
+}
+$('#lg_btn').onclick=tryLogin;
+$('#lg_pass').onkeydown=e=>{if(e.key==='Enter')tryLogin()};
+$('#lg_user').onkeydown=e=>{if(e.key==='Enter')tryLogin()};
+document.addEventListener('click',e=>{if(e.target&&e.target.id==='logoutBtn'){sessionStorage.removeItem(AUTH_KEY);location.reload()}});
+
 /* ================= إقلاع ================= */
-openDB().then(()=>{save();render()});
+if(sessionStorage.getItem(AUTH_KEY)==='1'){ showApp(); } else { showLogin(); }
 </script>
 </body>
 </html>
